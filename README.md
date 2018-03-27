@@ -9,19 +9,23 @@ npm install --save ldx-vue-select2
 
 ## Basic Usage
 ``` bash
-import Select2 from './components/Select2.vue';
-```
+<template>
+  <div>
+    <Select2 />
+  </div>
+</template>
 
-``` bash
+<script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
+import Select2 from './components/Select2.vue';
+
 @Component({
   components: {
     Select2,
   },
 })
-```
-
-``` bash
-<Select2 />
+export default class App extends Vue {}
+</script>
 ```
 
 ## Properties
