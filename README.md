@@ -1,6 +1,29 @@
 # ldx-vue-select2
 The Select2 (http://select2.org) component for VueJs.
 
+## Install
+### npm
+``` bash
+npm install --save ldx-vue-select2
+```
+
+## Basic Usage
+``` bash
+import Select2 from './components/Select2.vue';
+```
+
+``` bash
+@Component({
+  components: {
+    Select2,
+  },
+})
+```
+
+``` bash
+<Select2 />
+```
+
 ## Properties
 
 ``` bash

@@ -1,7 +1,7 @@
 {
-  "name": "ldxselect2",
+  "name": "ldx-vue-select2",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "main": "src/components/Select2.vue",
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -42,6 +42,10 @@
   ],
   "gitHooks": {
     "pre-commit": "lint-staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Landix-Sistemas/ldx-vue-select2"
   },
   "lint-staged": {
     "*.ts": [
