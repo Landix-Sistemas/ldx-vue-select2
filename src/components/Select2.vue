@@ -1,6 +1,6 @@
 <template>
   <div class="select2Father">
-    <select :ref="selectId" :id="selectId" class="select2-data-ajax"></select>
+    <select :ref="selectId" :id="selectId" class="select2-data-ajax" :value="value" @input="updateValue()">></select>
     <div>
       <a v-if="multiple && allowFill" @click="fillAll">{{ selectAllLabel }}</a>
       <a v-if="multiple && allowFill && !allowClear" @click="cleanAll">{{ cleanSelectedLabel }}</a>
@@ -16,6 +16,11 @@ import 'select2/dist/css/select2.css';
 
 @Component
 export default class Select2 extends Vue {
+  /**
+   * Selected Values
+   * @type {IdTextPair[]  | object}
+   */
+  @Prop() private value: IdTextPair[] | object;
   /**
    * Unique identifier for the select2 component
    * @default 'select2ID'
@@ -188,7 +193,6 @@ export default class Select2 extends Vue {
     },
   };
 
-  @Emit()
   public updateQueryParameters(value: object) {
     this.mutableQueryParameters = value;
     this.setSelect2();
@@ -210,7 +214,6 @@ export default class Select2 extends Vue {
     this.setSelect2();
   }
 
-  @Emit()
   private setSelect2() {
     // Set the select2 to the given identifier object
     $(`#${this.selectId}`).select2({
@@ -227,7 +230,6 @@ export default class Select2 extends Vue {
     });
   }
 
-  @Emit()
   private customMessages() {
     // Set the labels of the select2 component
     $.fn.select2.amd.define('select2/i18n/custom', [], () => {
@@ -271,7 +273,6 @@ export default class Select2 extends Vue {
     });
   }
 
-  @Emit()
   private setEvents() {
     $(`#${this.selectId}`).on('select2:select', (evt) => {
       this.$emit('onSelect', $(`#${this.selectId}`).val());
@@ -296,7 +297,6 @@ export default class Select2 extends Vue {
     window.onhashchange = () => $('.select2-dropdown').remove();
   }
 
-  @Emit()
   private fillAll() {
     if (!this.url) {
       $(`#${this.selectId}`).find('option').prop('selected', true)
@@ -319,19 +319,21 @@ export default class Select2 extends Vue {
     }
   }
 
-  @Emit()
   private cleanAll() {
     $(`#${this.selectId}`).val('').trigger('change');
   }
 
-  @Emit()
+  private updateValue() {
+    this.value = $(`#${this.selectId}`).select2('data');
+  }
+
   private customizeUrl(fillAll: boolean): string {
     const queryParam = {
       Page: 1,
       LimitPerPage: -1,
     };
-    let customUrl = this.url;
-    let urlParameters = '';
+    let customUrl: string = this.url;
+    let urlParameters: string = '';
 
     if (this.mutableQueryParameters !== undefined && this.mutableQueryParameters !== null) {
       urlParameters = $.param(this.mutableQueryParameters);
@@ -347,7 +349,6 @@ export default class Select2 extends Vue {
         customUrl = this.url + '?' + urlParameters;
       }
     }
-
     return customUrl;
   }
 
