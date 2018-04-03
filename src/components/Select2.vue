@@ -1,9 +1,9 @@
 <template>
   <div class="select2Father">
-    <select :ref="selectId" :id="selectId" class="select2-data-ajax" :value="value" @input="updateValue()">></select>
-    <div>
-      <a v-if="multiple && allowFill" @click="fillAll">{{ selectAllLabel }}</a>
-      <a v-if="multiple && allowFill && !allowClear" @click="cleanAll">{{ cleanSelectedLabel }}</a>
+    <select :ref="selectId" :id="selectId" class="select2-data-ajax"></select>
+    <div class="select2Buttons">
+      <div v-if="multiple && allowFill" @click="fillAll">{{ selectAllLabel }}</div>
+      <div v-if="multiple && allowFill && !allowClear" @click="cleanAll">{{ cleanSelectedLabel }}</div>
     </div>
   </div>
 </template>
@@ -16,11 +16,6 @@ import 'select2/dist/css/select2.css';
 
 @Component
 export default class Select2 extends Vue {
-  /**
-   * Selected Values
-   * @type {IdTextPair[]  | object}
-   */
-  @Prop() private value: IdTextPair[] | object;
   /**
    * Unique identifier for the select2 component
    * @default 'select2ID'
@@ -143,7 +138,12 @@ export default class Select2 extends Vue {
     * The initialized selected options
     * @type {IdTextPair[]}
     */
-  @Prop() private select: IdTextPair[];
+  @Prop() private initialValues: IdTextPair[];
+  /**
+   * The options
+   * @type {IdTextPair[]}
+   */
+  @Prop() private options: IdTextPair[];
   /**
    * Modifier query parameters
    * @type {object}
@@ -214,22 +214,41 @@ export default class Select2 extends Vue {
     this.setSelect2();
   }
 
+  /**
+   * Set the select2 to the given element identification.
+   */
   private setSelect2() {
     // Set the select2 to the given identifier object
     $(`#${this.selectId}`).select2({
       placeholder: this.placeholder,
-      // data: vue.options,
+      data: this.options,
       closeOnSelect: this.closeOnSelect,
       allowClear: this.allowClear,
       multiple: this.multiple,
-      escapeMarkup(markup) { return markup; }, // let our custom formatter work
+      escapeMarkup(markup: string) { return markup; }, // let our custom formatter work
       minimumInputLength: 0,
       width: this.width,
       language: 'custom',
       ajax: !this.url ? undefined : this.ajax,
     });
+
+    // Enable or disable the select2 element
+    if (this.disable) {
+      $(`#${this.selectId}`).prop('disabled', true);
+    }
+
+    if (this.initialValues) {
+      this.setItems(this.initialValues);
+    }
+
+    if (this.options) {
+      this.$emit('input', $(`#${this.selectId}`).select2('data'));
+    }
   }
 
+  /**
+   * Custom internationalization messages.
+   */
   private customMessages() {
     // Set the labels of the select2 component
     $.fn.select2.amd.define('select2/i18n/custom', [], () => {
@@ -273,9 +292,19 @@ export default class Select2 extends Vue {
     });
   }
 
+  /**
+   * Emit events to the father component.
+   */
   private setEvents() {
+    // On select a item
     $(`#${this.selectId}`).on('select2:select', (evt) => {
+      // Emit the selected ids
       this.$emit('onSelect', $(`#${this.selectId}`).val());
+
+      // Update the model
+      this.$emit('input', $(`#${this.selectId}`).select2('data'));
+
+      // Emit the full object selected
       if ((evt as any).params) {
         this.$emit('onSelectItem', (evt as any).params.data);
       }
@@ -283,23 +312,31 @@ export default class Select2 extends Vue {
 
     $('#' + this.selectId).on('select2:unselect', (evt) => {
       const value = this.multiple ? $(`#${this.selectId}`).val() : [];
+
+      // Emit the selected ids
       this.$emit('onSelect', value);
+
+      // Update the model
+      this.$emit('input', $(`#${this.selectId}`).select2('data'));
+
+      // Emit the full object unselected
       if ((evt as any).params) {
         this.$emit('onUnselect', (evt as any).params.data.id);
       }
     });
 
-    if (this.disable) {
-      $(`#${this.selectId}`).prop('disabled', true);
-    }
-
+    // Remove the select2 options dropdown on page change or refresh
     window.onpopstate = () => $('.select2-dropdown').remove();
     window.onhashchange = () => $('.select2-dropdown').remove();
   }
 
+  /**
+   * Select all items
+   */
   private fillAll() {
     if (!this.url) {
-      $(`#${this.selectId}`).find('option').prop('selected', true)
+      $(`#${this.selectId}`).find('option')
+                            .prop('selected', true)
                             .trigger('select2:select')
                             .trigger('change');
     } else {
@@ -314,19 +351,29 @@ export default class Select2 extends Vue {
           $(`#${this.selectId}`).append(new Option(item.text, item.id, true, true));
           data.push(item.id);
         }
-        $(`#${this.selectId}`).val(data).trigger('change');
+        $(`#${this.selectId}`).val(data)
+                              .trigger('select2:select')
+                              .trigger('change');
       });
     }
+
+    this.$emit('input', $(`#${this.selectId}`).select2('data'));
   }
 
+  /**
+   * Unselect all items
+   */
   private cleanAll() {
-    $(`#${this.selectId}`).val('').trigger('change');
+    $(`#${this.selectId}`).val('')
+                          .trigger('select2:select')
+                          .trigger('change');
+
+    this.$emit('input', $(`#${this.selectId}`).select2('data'));
   }
 
-  private updateValue() {
-    this.value = $(`#${this.selectId}`).select2('data');
-  }
-
+  /**
+   * Customize URL with the query parameters
+   */
   private customizeUrl(fillAll: boolean): string {
     const queryParam = {
       Page: 1,
@@ -352,8 +399,10 @@ export default class Select2 extends Vue {
     return customUrl;
   }
 
-  @Watch('select')
-  private onSelectChanged(newValue: IdTextPair[]) {
+  /**
+   * Set selected items
+   */
+  private setItems(newValue: IdTextPair[]) {
     $(`#${this.selectId}`).val('').trigger('change'); // clean selected items
     $(`#${this.selectId}`).html(''); // delete all the options
 
@@ -366,7 +415,16 @@ export default class Select2 extends Vue {
       }
     }
 
-    $(`#${this.selectId}`).val(data).trigger('change');
+    $(`#${this.selectId}`).val(data)
+                          .trigger('select2:select')
+                          .trigger('change');
+
+    this.$emit('input', $(`#${this.selectId}`).select2('data'));
+  }
+
+  @Watch('initialValues')
+  private onInitialValuesChanged(newValue: IdTextPair[]) {
+    this.setItems(newValue);
   }
 
   @Watch('disable')
@@ -392,4 +450,56 @@ export default class Select2 extends Vue {
 </script>
 
 <style lang="stylus">
+@import '../themes/app.variables.styl'
+
+.select2Buttons
+  text-align right
+  div
+    padding $select2ButtonsPadding
+    cursor pointer
+    text-transform capitalize
+    display inline-block
+    border $select2ButtonsBorder
+    margin $select2ButtonsMargin
+    background $select2ButtonsBackground 
+    color $select2ButtonsColor
+    border-radius $select2ButtonsBorderRadius
+    font-size $select2ButtonsFontSize
+    font-weight $select2ButtonsFontWeight
+  
+.select2-container--default 
+.select2-selection--multiple
+  border-radius $select2ElementBorderRadius !important
+  border $select2ElementBoder !important
+  background-color $select2ElementBackgroundColor !important
+  font-size $select2ElementFontSize !important
+  font-weight $select2ElementFontWeight !important
+
+.select2-selection__choice
+  background-color $select2TagBackgroundColor !important
+  color $select2TagColor !important
+  font-size $select2TagFontSize !important
+  font-weight $select2TagFontWeight !important
+  border-radius $select2TagBorderRadius !important
+  border $select2TagBorder !important
+  cursor default !important
+  .select2-selection__choice__remove
+    color $select2TagUnselectColor !important
+    font-size $select2TagUnselecFontSize !important
+    font-weight $select2TagUnselecFontWeight !important
+
+.select2-dropdown
+  border-radius $select2DropdownBorderRadius !important
+  border $select2DropdownBorder !important
+  background-color $select2DropdownBackgroundColor !important
+  .select2-results__option
+    color $select2DropdownOptionsColor !important
+    font-size $select2DropdownOptionsFontSize
+    &[aria-selected=true]
+      background-color $select2DropdownOptionsSelectedBackgroundColor !important
+      color $select2DropdownOptionsSelectedColor !important
+  .select2-results__option--highlighted[aria-selected]
+    background-color $select2DropdownOptionsHighlightedBackgroundColor !important
+    color $select2DropdownOptionsHighlightedColor !important
+
 </style>

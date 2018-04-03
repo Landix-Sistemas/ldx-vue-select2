@@ -11,7 +11,7 @@ npm install --save ldx-vue-select2
 ``` bash
 <template>
   <div>
-    <Select2 />
+    <Select2 v-model="selectData"/>
   </div>
 </template>
 
@@ -24,8 +24,14 @@ import Select2 from './components/Select2.vue';
     Select2,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  @Provide() public selectData: object[] = [];
+}
 </script>
+
+<style lang="stylus">
+@import '../../node_modules/ldx-vue-select2/src/themes/app.variables.styl'
+</style>
 ```
 
 ## Properties
@@ -174,8 +180,66 @@ export default class App extends Vue {}
     * The initialized selected options
     * @type {IdTextPair[]}
     */
-  @Prop() private select: IdTextPair[];
+  @Prop() private initialValues: IdTextPair[];
+
+  /**
+   * The options
+   * @type {IdTextPair[]}
+   */
+  @Prop() private options: IdTextPair[];
   
+```
+
+## Stylus Variables
+
+``` bash
+/* Select All and Unselect All butons style */
+$select2ButtonsBorder = 1px solid #AAA // Border
+$select2ButtonsBorderRadius = 2px // Border radius
+$select2ButtonsColor = #FFFFFF // Text color
+$select2ButtonsBackground = #A8061E // Background color
+$select2ButtonsMargin = 3px // Margin 
+$select2ButtonsPadding = 5px // Padding
+$select2ButtonsFontSize = 15px // Font Size
+$select2ButtonsFontWeight = normal // Font Weight
+
+/* Select Element */
+$select2ElementBoder = 1px solid #A8061E // Border
+$select2ElementBorderRadius = 2px // Border radius
+$select2ElementBackgroundColor = #FFFFFF // Background color
+$select2ElementFontSize = 15px // Font Size
+$select2ElementFontWeight = normal // Font Weight
+
+/* Selected item on multiple selection */
+$select2TagBackgroundColor = #b5b5b5 // Background color
+$select2TagColor = #FFFFFF // Text color
+$select2TagFontSize = 15px // Font Size
+$select2TagFontWeight = normal // Font Weight
+$select2TagBorderRadius = 2px // Border radius
+$select2TagBorder = 1px solid #A8061E // Border
+
+/* The X on Selected item on multiple selection */
+$select2TagUnselectColor = #A8061E
+$select2TagUnselecFontSize = 20px // Font Size
+$select2TagUnselecFontWeight = bolder // Font Weight
+
+/* Select Dropdown */
+$select2DropdownBorderRadius = 2px // Border radius
+$select2DropdownBorder = 2px solid #A8061E // Border
+$select2DropdownBackgroundColor = #f0f0f0 // Background color
+
+/* Select Dropdown Options */
+$select2DropdownOptionsColor = #b5b5b5 // Text color
+$select2DropdownOptionsFontSize = 15px // Font size
+
+/* Select Dropdown Options Selected */
+$select2DropdownOptionsSelectedBackgroundColor = #A8061E // Background color
+$select2DropdownOptionsSelectedColor = #FFFFFF // Text color
+
+/* Select Dropdown Options Highlighted */
+$select2DropdownOptionsHighlightedBackgroundColor = #b5b5b5 // Background color
+$select2DropdownOptionsHighlightedColor = #FFFFFF // Text color
+
 ```
 
 ## License & Copyright
