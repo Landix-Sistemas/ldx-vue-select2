@@ -7,37 +7,40 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue, Model, Watch, Provide, Emit } from 'vue-property-decorator';
-import Select2 from './components/Select2.vue';
+<script>
+import Select2 from './components/Select2.vue'
 
-@Component({
+export default {
+  name: 'app',
   components: {
-    Select2,
+    Select2
   },
-})
-export default class App extends Vue {
-  @Provide() public selected1: object[] = [];
-  @Provide() public selected2: object[] = [];
-
-  private initialValue: object[] = [{
-    id: 'sample string 1',
-    text: 'sample string 1',
-  }];
-
-  private options: IdTextPair[] = [
-    {
-      id: '1',
-      text: 'teste options 1',
-    },
-    {
-      id: '2',
-      text: 'teste options 2',
-    },
-    {
-      id: '3',
-      text: 'teste options 3',
-    },
-  ];
+  data () {
+    return {
+      selected1: [],
+      selected2: [],
+      initialValue: [{
+        id: 'sample string 1',
+        text: 'sample string 1'
+      }],
+      options: [
+        {
+          id: '1',
+          text: 'teste options 1'
+        },
+        {
+          id: '2',
+          text: 'teste options 2'
+        },
+        {
+          id: '3',
+          text: 'teste options 3'
+        }
+      ]
+    }
+  }
 }
 </script>
+
+<style lang="stylus">
+</style>
