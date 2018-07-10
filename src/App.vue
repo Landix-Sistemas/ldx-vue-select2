@@ -1,6 +1,16 @@
 <template>
   <div id="app">
-    <Select2 selectId="selectURL" url="http://localhost:3000/select2" :allowFill="true" :multiple="true" v-model="selected1" :initialValues="initialValue"/>
+    <Select2 
+      selectId="selectURL" 
+      url="http://xxxxxxxx/" 
+      :allowFill="true" 
+      :multiple="true" 
+      v-model="selected1" 
+      :initialValues="initialValue"
+      responseData="results"
+      dataId="id"
+      dataText="name"
+    />
     <p>data:> {{ selected1 }}</p>
     <Select2 selectId="selectOptions" :options="options" v-model="selected2"/>
     <p>data:> {{ selected2 }}</p>

@@ -200,11 +200,73 @@ export default {
       type: Array
     },
     /**
-    * The options
-    * @type {Array}
-    */
+     * The options
+     * @type {Array}
+     */
     options: {
       type: Array
+    },
+    /**
+     * Where to find the data in the response
+     * @type {String}
+     */
+    responseData: {
+      type: String
+    },
+    /**
+     * Where to find the data id in the response
+     * @type {String}
+     */
+    dataId: {
+      type: String,
+      default: 'id'
+    },
+    /**
+     * Where to find the data text in the response
+     * @type {String}
+     */
+    dataText: {
+      type: String,
+      default: 'value'
+    },
+    /**
+     * Enable Ajax request with credentials
+     * @type {String}
+     */
+    withCredentials: {
+      type: Boolean
+    },
+    /**
+     * Number of results to return per page
+     * @type {String}
+     */
+    dataLimit: {
+      type: String,
+      default: 'LimitPerPage'
+    },
+    /**
+     * The initial index from which to return the results
+     * @type {String}
+     */
+    dataOffset: {
+      type: String,
+      default: 'Page'
+    },
+    /**
+     * The propertie of the search term
+     * @type {String}
+     */
+    dataTerm: {
+      type: String,
+      default: 'Term'
+    },
+    /**
+     * The propertie of the total of items
+     * @type {String}
+     */
+    dataTotal: {
+      type: String,
+      defaut: 'total'
     }
   },
   data () {
@@ -213,7 +275,7 @@ export default {
        * Modifier query parameters
        * @type {object}
        */
-      mutableQueryParameters: undefined,
+      mutableQueryParameters: this.queryParameters,
       /**
        * Setting the AJAX Options
        * @type {AjaxOptions}
@@ -225,14 +287,15 @@ export default {
         delay: 500,
         cache: true,
         xhrFields: {
-          withCredentials: true
+          withCredentials: this.withCredentials || false
         },
         data: (params) => {
-          return {
-            Term: params.term || '', // search term
-            Page: params.page || 1,
-            LimitPerPage: this.limitPerPage || 10
-          }
+          let dataReturn = {}
+          dataReturn[this.dataTerm] = params.term || ''
+          dataReturn[this.dataOffset] = (params.page - 1 || 0) * (this.limitPerPage || 10)
+          dataReturn[this.dataLimit] = this.limitPerPage || 10
+
+          return dataReturn
         },
         beforeSend () {
           // Loading.show()
@@ -249,10 +312,19 @@ export default {
           // Hide the loading
           // Loading.hide()
 
+          let options = []
+
+          if (this.responseData && this.dataId && this.dataText) {
+            data['results'].forEach((item) => options.push({ 
+              id: item[this.dataId], 
+              text: item[this.dataText] 
+            }))
+          }
+
           return {
-            results: data.items || [],
+            results: options || data.items || [],
             pagination: {
-              more: (params.page * (this.limitPerPage || 10)) < data.total
+              more: (params.page * (this.limitPerPage || 10)) < data[this.dataTotal]
             }
           }
         }
@@ -276,6 +348,8 @@ export default {
      * Set the select2 to the given element identification.
      */
     setSelect2 () {
+      this.customizeUrl(false)
+
       // Set the select2 to the given identifier object
       $(`#${this.selectId}`).select2({
         placeholder: this.placeholder,
@@ -444,6 +518,10 @@ export default {
       }
       let customUrl = this.url
       let urlParameters = ''
+      
+      if(this.mutableQueryParameters === null || this.mutableQueryParameters === undefined) {
+        this.mutableQueryParameters = this.queryParameters
+      }
 
       if (this.mutableQueryParameters !== undefined && this.mutableQueryParameters !== null) {
         urlParameters = $.param(this.mutableQueryParameters)
@@ -459,6 +537,11 @@ export default {
           customUrl = this.url + '?' + urlParameters
         }
       }
+
+      if (this.ajax) {
+        this.ajax.url = customUrl
+      }
+
       return customUrl
     },
 
@@ -491,54 +574,6 @@ export default {
 <style lang="stylus">
 @import '../themes/app.variables.styl'
 
-.select2Buttons
-  text-align right
-  div
-    padding $select2ButtonsPadding
-    cursor pointer
-    text-transform capitalize
-    display inline-block
-    border $select2ButtonsBorder
-    margin $select2ButtonsMargin
-    background $select2ButtonsBackground
-    color $select2ButtonsColor
-    border-radius $select2ButtonsBorderRadius
-    font-size $select2ButtonsFontSize
-    font-weight $select2ButtonsFontWeight
 
-.select2-container--default
-.select2-selection--multiple
-  border-radius $select2ElementBorderRadius !important
-  border $select2ElementBoder !important
-  background-color $select2ElementBackgroundColor !important
-  font-size $select2ElementFontSize !important
-  font-weight $select2ElementFontWeight !important
-
-.select2-selection__choice
-  background-color $select2TagBackgroundColor !important
-  color $select2TagColor !important
-  font-size $select2TagFontSize !important
-  font-weight $select2TagFontWeight !important
-  border-radius $select2TagBorderRadius !important
-  border $select2TagBorder !important
-  cursor default !important
-  .select2-selection__choice__remove
-    color $select2TagUnselectColor !important
-    font-size $select2TagUnselecFontSize !important
-    font-weight $select2TagUnselecFontWeight !important
-
-.select2-dropdown
-  border-radius $select2DropdownBorderRadius !important
-  border $select2DropdownBorder !important
-  background-color $select2DropdownBackgroundColor !important
-  .select2-results__option
-    color $select2DropdownOptionsColor !important
-    font-size $select2DropdownOptionsFontSize
-    &[aria-selected=true]
-      background-color $select2DropdownOptionsSelectedBackgroundColor !important
-      color $select2DropdownOptionsSelectedColor !important
-  .select2-results__option--highlighted[aria-selected]
-    background-color $select2DropdownOptionsHighlightedBackgroundColor !important
-    color $select2DropdownOptionsHighlightedColor !important
 
 </style>
