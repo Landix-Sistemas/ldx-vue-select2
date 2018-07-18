@@ -11,34 +11,158 @@ npm install --save ldx-vue-select2
 ``` bash
 <template>
   <div>
-    <Select2 v-model="selectData"/>
+    <Select2 
+      selectId="selectOptions" 
+      :initialValues="initialValue" 
+      :options="options" 
+      v-model="selectData"
+    />
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import Select2 from './components/Select2.vue';
+<script>
+import Select2 from 'ldx-vue-select2'
 
-@Component({
+export default {
+  name: 'SVN',
   components: {
-    Select2,
+    Select2
   },
-})
-export default class App extends Vue {
-  @Provide() public selectData: object[] = [];
+  data () {
+    return {
+      selectData: undefined,
+      initialValue: [
+        {
+          id: '1',
+          text: 'teste options 1'
+        }
+      ]
+      options: [
+        {
+          id: '1',
+          text: 'teste options 1'
+        },
+        {
+          id: '2',
+          text: 'teste options 2'
+        },
+        {
+          id: '3',
+          text: 'teste options 3'
+        }
+      ]
+    }
+  }
 }
 </script>
 
 <style lang="stylus">
-@import '../../node_modules/ldx-vue-select2/src/themes/app.variables.styl'
+</style>
+```
+
+## Ajax Options
+
+### API
+
+``` bash
+API request parameters example: 
+
+{
+  name: '',
+  offset: 0,
+  limit: 10,
+}
+
+API response example:
+
+{
+  "count":5,
+  "next":null,
+  "previous":null,
+  "results":[
+    {
+      "id":1,
+      "name":"Teste 1",
+      "created_date":"2018-07-18T10:33:46-03:00"
+    },
+    {
+      "id":2,
+      "name":"Teste 2",
+      "created_date":"2018-07-18T10:33:46-03:00"
+    },
+    {
+      "id":3,
+      "name":"Teste 3",
+      "created_date":"2018-07-18T10:33:46-03:00"
+    },
+    {
+      "id":4,
+      "name":"Teste 4",
+      "created_date":"2018-07-18T10:33:46-03:00"
+    },
+    {
+      "id":5,
+      "name":"Teste 5",
+      "created_date":"2018-07-18T10:33:46-03:00"
+    }
+  ]
+}
+
+```
+
+### Vue file
+
+``` bash
+<template>
+  <div>
+    <select2
+      selectId="selectAjax"
+      v-model="selectData"
+      :url="http://localhost/getOptions"
+      responseData="results"
+      dataId="id"
+      dataText="description"
+      dataLimit="limit"
+      dataOffset="offset"
+      dataTerm="description"
+      placeholder="Selecione uma opção ..."
+      dataTotal="count"
+      ref="selectAjax"
+      @onSelect="onItemSelected"
+      :itemsToExclude="[1, 2]"
+    />
+  </div>
+</template>
+
+<script>
+import Select2 from 'ldx-vue-select2'
+
+export default {
+  name: 'SVN',
+  components: {
+    Select2
+  },
+  data () {
+    return {
+      selectData: undefined
+    }
+  },
+  methods: {
+    onItemSelected (value) {
+      console.log(value)
+    }
+  }
+}
+</script>
+
+<style lang="stylus">
 </style>
 ```
 
 ## Properties
 
 ``` bash
-
-  /**
+    /**
      * Unique identifier for the select2 component
      * @default 'select2ID'
      * @type {string}
@@ -222,65 +346,104 @@ export default class App extends Vue {
       type: Array
     },
     /**
-    * The options
-    * @type {Array}
-    */
+     * The options
+     * @type {Array}
+     */
     options: {
+      type: Array
+    },
+    /**
+     * Where to find the data in the response
+     * @type {String}
+     */
+    responseData: {
+      type: String
+    },
+    /**
+     * Where to find the data id in the response
+     * @type {String}
+     */
+    dataId: {
+      type: String,
+      default: 'id'
+    },
+    /**
+     * Where to find the data text in the response
+     * @type {String}
+     */
+    dataText: {
+      type: String,
+      default: 'value'
+    },
+    /**
+     * Enable Ajax request with credentials
+     * @type {String}
+     */
+    withCredentials: {
+      type: Boolean
+    },
+    /**
+     * Number of results to return per page
+     * @type {String}
+     */
+    dataLimit: {
+      type: String,
+      default: 'LimitPerPage'
+    },
+    /**
+     * The initial index from which to return the results
+     * @type {String}
+     */
+    dataOffset: {
+      type: String,
+      default: 'Page'
+    },
+    /**
+     * The propertie of the search term
+     * @type {String}
+     */
+    dataTerm: {
+      type: String,
+      default: 'Term'
+    },
+    /**
+     * The propertie of the total of items
+     * @type {String}
+     */
+    dataTotal: {
+      type: String,
+      defaut: 'total'
+    },
+    /**
+     * List of items to not display
+     * @type {Array}
+     */
+    itemsToExclude: {
       type: Array
     }
   
 ```
 
-## Stylus Variables
+## Methods
 
 ``` bash
-/* Select All and Unselect All butons style */
-$select2ButtonsBorder = 1px solid #AAA // Border
-$select2ButtonsBorderRadius = 2px // Border radius
-$select2ButtonsColor = #FFFFFF // Text color
-$select2ButtonsBackground = #A8061E // Background color
-$select2ButtonsMargin = 3px // Margin 
-$select2ButtonsPadding = 5px // Padding
-$select2ButtonsFontSize = 15px // Font Size
-$select2ButtonsFontWeight = normal // Font Weight
+ /**
+  * Unselect all items
+  */
+  cleanAll ()
 
-/* Select Element */
-$select2ElementBoder = 1px solid #A8061E // Border
-$select2ElementBorderRadius = 2px // Border radius
-$select2ElementBackgroundColor = #FFFFFF // Background color
-$select2ElementFontSize = 15px // Font Size
-$select2ElementFontWeight = normal // Font Weight
+ /**
+  * Set selected items
+  * @param {array} newValue List of options to add to the select2
+  */
+  setItems (newValue)
 
-/* Selected item on multiple selection */
-$select2TagBackgroundColor = #b5b5b5 // Background color
-$select2TagColor = #FFFFFF // Text color
-$select2TagFontSize = 15px // Font Size
-$select2TagFontWeight = normal // Font Weight
-$select2TagBorderRadius = 2px // Border radius
-$select2TagBorder = 1px solid #A8061E // Border
-
-/* The X on Selected item on multiple selection */
-$select2TagUnselectColor = #A8061E
-$select2TagUnselecFontSize = 20px // Font Size
-$select2TagUnselecFontWeight = bolder // Font Weight
-
-/* Select Dropdown */
-$select2DropdownBorderRadius = 2px // Border radius
-$select2DropdownBorder = 2px solid #A8061E // Border
-$select2DropdownBackgroundColor = #f0f0f0 // Background color
-
-/* Select Dropdown Options */
-$select2DropdownOptionsColor = #b5b5b5 // Text color
-$select2DropdownOptionsFontSize = 15px // Font size
-
-/* Select Dropdown Options Selected */
-$select2DropdownOptionsSelectedBackgroundColor = #A8061E // Background color
-$select2DropdownOptionsSelectedColor = #FFFFFF // Text color
-
-/* Select Dropdown Options Highlighted */
-$select2DropdownOptionsHighlightedBackgroundColor = #b5b5b5 // Background color
-$select2DropdownOptionsHighlightedColor = #FFFFFF // Text color
-
+ /**
+  * Update url parameters to send to API
+  * Use this method to make cascading select2
+  * @param {object}
+  */
+  updateQueryParameters (value)
 ```
 
 ## License & Copyright

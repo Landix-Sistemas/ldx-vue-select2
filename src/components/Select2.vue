@@ -267,6 +267,13 @@ export default {
     dataTotal: {
       type: String,
       defaut: 'total'
+    },
+    /**
+     * List of items to not display
+     * @type {Array}
+     */
+    itemsToExclude: {
+      type: Array
     }
   },
   data () {
@@ -315,10 +322,14 @@ export default {
           let options = []
 
           if (this.responseData && this.dataId && this.dataText) {
-            data['results'].forEach((item) => options.push({ 
-              id: item[this.dataId], 
-              text: item[this.dataText] 
-            }))
+            data['results'].forEach((item) =>{
+              if (!this.itemsToExclude || (this.itemsToExclude && !this.itemsToExclude.includes(item[this.dataId].toString()))) {
+                options.push({
+                  id: item[this.dataId],
+                  text: item[this.dataText]
+                })
+              }
+            })
           }
 
           return {
@@ -518,7 +529,7 @@ export default {
       }
       let customUrl = this.url
       let urlParameters = ''
-      
+
       if(this.mutableQueryParameters === null || this.mutableQueryParameters === undefined) {
         this.mutableQueryParameters = this.queryParameters
       }
@@ -571,9 +582,56 @@ export default {
 }
 </script>
 
-<style lang="stylus">
+<style scoped lang="stylus">
 @import '../themes/app.variables.styl'
 
+.select2Buttons
+  text-align right
+  div
+    padding $select2ButtonsPadding
+    cursor pointer
+    text-transform capitalize
+    display inline-block
+    border $select2ButtonsBorder
+    margin $select2ButtonsMargin
+    background $select2ButtonsBackground
+    color $select2ButtonsColor
+    border-radius $select2ButtonsBorderRadius
+    font-size $select2ButtonsFontSize
+    font-weight $select2ButtonsFontWeight
 
+.select2-container--default
+.select2-selection--multiple
+  border-radius $select2ElementBorderRadius !important
+  border $select2ElementBoder !important
+  background-color $select2ElementBackgroundColor !important
+  font-size $select2ElementFontSize !important
+  font-weight $select2ElementFontWeight !important
 
+.select2-selection__choice
+  background-color $select2TagBackgroundColor !important
+  color $select2TagColor !important
+  font-size $select2TagFontSize !important
+  font-weight $select2TagFontWeight !important
+  border-radius $select2TagBorderRadius !important
+  border $select2TagBorder !important
+  cursor default !important
+  .select2-selection__choice__remove
+    color $select2TagUnselectColor !important
+    font-size $select2TagUnselecFontSize !important
+    font-weight $select2TagUnselecFontWeight !important
+
+.select2-dropdown
+  border-radius $select2DropdownBorderRadius !important
+  border $select2DropdownBorder !important
+  background-color $select2DropdownBackgroundColor !important
+  .select2-results__option
+    color $select2DropdownOptionsColor !important
+    font-size $select2DropdownOptionsFontSize
+    &[aria-selected=true]
+      background-color $select2DropdownOptionsSelectedBackgroundColor !important
+      color $select2DropdownOptionsSelectedColor !important
+  .select2-results__option--highlighted[aria-selected]
+    background-color $select2DropdownOptionsHighlightedBackgroundColor !important
+    color $select2DropdownOptionsHighlightedColor !important
 </style>
