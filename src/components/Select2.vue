@@ -280,9 +280,14 @@ export default {
     return {
       /**
        * Modifier query parameters
-       * @type {object}
+       * @type {Object}
        */
       mutableQueryParameters: this.queryParameters,
+      /**
+       * A List of the full object received in ajax call
+       * @type {Array}
+       */
+      listOfFullObjectsFromAjax: [],
       /**
        * Setting the AJAX Options
        * @type {AjaxOptions}
@@ -322,12 +327,14 @@ export default {
           let options = []
 
           if (this.responseData && this.dataId && this.dataText) {
-            data['results'].forEach((item) =>{
+            data[this.responseData].forEach((item) => {
               if (!this.itemsToExclude || (this.itemsToExclude && !this.itemsToExclude.includes(item[this.dataId].toString()))) {
                 options.push({
                   id: item[this.dataId],
                   text: item[this.dataText]
                 })
+
+                this.listOfFullObjectsFromAjax[item[this.dataId]] = item
               }
             })
           }
@@ -449,7 +456,7 @@ export default {
 
         // Emit the full object selected
         if (evt.params) {
-          this.$emit('onSelectItem', (evt).params.data)
+          this.$emit('onSelectItem', this.listOfFullObjectsFromAjax[(evt).params.data.id])
         }
       })
 
@@ -490,14 +497,13 @@ export default {
 
         // Call api
         axios.get(this.customizeUrl(true)).then((response) => {
-          for (const item of response.data.items) {
-            $(`#${this.selectId}`).append({
-              text: item.text,
-              value: item.id,
-              defaultSelected: true,
-              selected: true
-            })
-            data.push(item.id)
+          for (const item of response.data[this.responseData]) {
+            if (!this.itemsToExclude || (this.itemsToExclude && !this.itemsToExclude.includes(item[this.dataId].toString()))) {
+              $(`#${this.selectId}`).append(new Option(item[this.dataText], item[this.dataId], true, true))
+              data.push(item[this.dataId])
+              this.listOfFullObjectsFromAjax[item[this.dataId]] = item
+              this.$emit('onSelectItem', item)
+            }
           }
           $(`#${this.selectId}`).val(data)
             .trigger('select2:select')
@@ -517,6 +523,8 @@ export default {
         .trigger('change')
 
       this.$emit('input', $(`#${this.selectId}`).select2('data'))
+
+      this.listOfFullObjectsFromAjax.forEach((item, key) => this.$emit('onUnselect', key))
     },
 
     /**
